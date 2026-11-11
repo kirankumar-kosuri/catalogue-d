@@ -1,4 +1,4 @@
-// this are pre-build section
+// pre build 
 pipeline{
     agent{
         node{
@@ -6,55 +6,36 @@ pipeline{
         }
     }
 
+// build
     environment{
-        COURSE = "Jenkins"
+        COURSE = "Jenkins-CICD"
         appVersion = ""
     }
-
     options {
-        // timeout(time: 10, unit: 'SECONDS') 
+        timeout(time: 10, unit: 'MINUTES') 
         disableConcurrentBuilds()
     }
-    // this is build section
+
     stages{
         stage('Read Version'){
             steps{
                 script{
-
-                    def packageJSON = readJSON file: 'package.json'
-                    appVersion = packageJSON.version
-                    echo "app version is: ${appVersion}"
-
+                    def packageJson = readJSON file: "package.json"
+                    appVersion = packageJson.version
+                    echo "appVersion is: ${appVersion}"
                 }
             }
         }
-        stage('Install Dependences'){
+        stage('Test'){
             steps{
                 script{
                     sh """
-                         npm install
+                        echo "Testing"
                     """
                 }
             }
         }
-
-        stage('Build Docker Image'){
-            steps{
-                script{
-                    sh """
-                         docker build -t catalogue:${appVersion} . 
-                         docker images
-                    """
-                }
-            }
-        }
-
-        stage('Deploy'){
-
-            // when{
-            //     expression  = { "$params.DEPLOY" == "true" }
-            // }
-
+        stage(Deploy){
             // input {
             //     message "Should we continue?"
             //     ok "Yes, we should."
@@ -63,33 +44,32 @@ pipeline{
             //         string(name: 'PERSON', defaultValue: 'Mr Jenkins', description: 'Who should I say hello to?')
             //     }
             // }
-
+            when{
+                expression { "$params.DEPLOY" == "true"}
+            }
             steps{
                 script{
                     sh """
-                         echo "Deploying"
+                        echo "Deploying"
                     """
                 }
             }
         }
     }
-
+// post build
     post{
         always{
             echo 'I will always say Hello again!'
             cleanWs()
         }
-
         success{
-            echo "I will run if SUCCESS"
+            echo "I WILL RUN IF SUCCESS"
         }
-
         failure{
-            echo "I will run if FAILURE"
+            echo "I WILL RUN IF FAILURE"
         }
-
-        // aborted{
-        //     echo "Pipeline is Aborrted please Check"
-        // }
+        aborted{
+            echo "Pipeline is Aborted please Check"
+        }
     }
 }

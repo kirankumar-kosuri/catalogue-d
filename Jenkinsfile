@@ -38,16 +38,23 @@ pipeline{
                 }
             }
         }
-        stage('Building Image'){
-            steps{
-                script{
-                    withAWS(region: 'us-east-1',credentials:'aws-creds') {
-                        sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.     us-east-1.amazonaws.com
-                            docker build ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                            docker images
-                            docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                        """
+        stage('Building Image') {
+    steps {
+        script {
+            withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                sh """
+                    # Login to AWS ECR
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+
+                    # Build Docker Image
+                    docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
+
+                    # List Docker Images
+                    docker images
+
+                    # Push Image to ECR
+                    docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
+                """
                     }
                 }
             }

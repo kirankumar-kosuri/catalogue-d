@@ -9,6 +9,9 @@ pipeline{
     environment{
         COURSE = "Jenkins"
         appVersion = ""
+        ACC_ID = "103295384824"
+        PROJECT = "roboshop"
+        COMPONENT = "catalogue"
     }
 
     options {
@@ -39,31 +42,23 @@ pipeline{
         stage('Build Image'){
             steps{
                 script{
-                    sh """
-                        docker build -t catalogue:${appVersion} .
-                        docker images
-                    """
-                }
-            }
-        }
-        stage('Deploy'){
-            // input {
-            //     message "Should we continue?"
-            //     ok "Yes, we should."
-            //     submitter "alice,bob"
-            //     parameters {
-            //         string(name: 'PERSON', defaultValue: 'Mr Kiran', description: 'Who should I say hello to?')
-            //     }
-            // }
-            // when{
-            //     expression { "$params.DEPLOY" == "true" }
+                    withAWS(region:"us-east-1",credentials:"aws-creds") {
+                        sh """
 
-            // }
-            steps{
-                script{
-                    sh """
-                        echo "Deploying"
-                    """
+                        // Login 
+                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+
+                        // Docker Image Build
+                            docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
+
+                        // Listing Docker Images
+                           docker images
+
+                        // Docker Push
+                            docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} 
+
+                        """
+                    }
                 }
             }
         }

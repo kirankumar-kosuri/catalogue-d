@@ -1,4 +1,4 @@
-// pre build 
+// pre-build stage
 pipeline{
     agent{
         node{
@@ -6,19 +6,17 @@ pipeline{
         }
     }
 
-// build
     environment{
-        COURSE = "Jenkins-CICD"
+        COURSE = "Jenkins"
         appVersion = ""
-        ACC_ID = "103295384824"
-        PROJECT = "roboshop"
-        COMPONENT = "catalogue"
     }
+
     options {
-        timeout(time: 10, unit: 'MINUTES') 
+        timeout(time: 10, unit: 'SECONDS') 
         disableConcurrentBuilds()
     }
 
+// build stage
     stages{
         stage('Read Version'){
             steps{
@@ -29,51 +27,52 @@ pipeline{
                 }
             }
         }
-        stage('Install Dependencies'){
+        stage('Test'){
             steps{
                 script{
                     sh """
-                        npm install
+                        echo "Testing"
                     """
                 }
             }
         }
-        stage('Building Image') {
-    steps {
-        script {
-            withAWS(region: 'us-east-1', credentials: 'aws-creds') {
-                sh """
-                    # Login to AWS ECR
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+        stage('Deploy'){
+            // input {
+            //     message "Should we continue?"
+            //     ok "Yes, we should."
+            //     submitter "alice,bob"
+            //     parameters {
+            //         string(name: 'PERSON', defaultValue: 'Mr Kiran', description: 'Who should I say hello to?')
+            //     }
+            // }
+            when{
+                expression { "$params.DEPLOY" == "true" }
 
-                    # Build Docker Image
-                    docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-
-                    # List Docker Images
-                    docker images
-
-                    # Push Image to ECR
-                    docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                """
-                    }
+            }
+            steps{
+                script{
+                    sh """
+                        echo "Deploying"
+                    """
                 }
             }
         }
     }
-// post build
+
+// post build stage
     post{
         always{
-            echo 'I will always say Hello again!'
+            echo "I will always say Hello again!"
             cleanWs()
         }
         success{
-            echo "I WILL RUN IF SUCCESS"
+            echo "I will run if success"
         }
         failure{
-            echo "I WILL RUN IF FAILURE"
+            echo "I will run if failure"
         }
-        aborted{
-            echo "Pipeline is Aborted please Check"
-        }
+        // aborted{
+        //     echo "Pipeline is Aborted please Check It"
+        // }
     }
 }

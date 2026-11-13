@@ -39,7 +39,7 @@ pipeline{
                 }
             }
         }
-        stage('Npm Test'){
+        stage('Unit Test'){
             steps{
                 script{
                     sh """

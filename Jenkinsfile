@@ -8,65 +8,73 @@ pipeline{
 
     environment{
         COURSE = "Jenkins"
-        appVersion = ""
-        ACCOUNT_ID = "103295384824"
-        PROJECT = "roboshop"
-        COMPONENT = "catalogue"
     }
 
     options {
-        // timeout(time: 10, unit: 'SECONDS') 
+        timeout(time: 10, unit: 'SECONDS') 
         disableConcurrentBuilds()
+    }
+
+    parameters {
+        string(name: 'PERSON', defaultValue: 'Mr Jenkins', description: 'Who should I say hello to?')
+        text(name: 'BIOGRAPHY', defaultValue: '', description: 'Enter some information about the person')
+        booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Toggle this value')
+        choice(name: 'CHOICE', choices: ['One', 'Two', 'Three'], description: 'Pick something')
+        password(name: 'PASSWORD', defaultValue: 'SECRET', description: 'Enter a password')
     }
 
 // build stage
     stages{
-        stage('Read Version'){
-            steps{
-                script{
-                    def packageJSON = readJSON file: "package.json"
-                    appVersion = packageJSON.version
-                    echo "appVersion is: ${appVersion}"
-                }
-            }
-        }
-        stage('Install Dependencies'){
+        stage('Build'){
             steps{
                 script{
                     sh """
-                        npm install
+                        echo "Building"
+                        echo "$COURSE"
+                        #sleep 10
+                        env
+
+                        echo "Hello ${params.PERSON}"
+                        echo "Biography: ${params.BIOGRAPHY}"
+                        echo "Toggle: ${params.DEPLOY}"
+                        echo "Choice: ${params.CHOICE}"
+                        echo "Password: ${params.PASSWORD}"
                     """
                 }
             }
         }
-        stage('Unit Test'){
+        stage('Test'){
             steps{
                 script{
                     sh """
-                        npm test
+                        echo "Testing"
                     """
                 }
             }
         }
-        stage('Build Docker Image'){
+        stage('Deploy'){
+            // input {
+            //     message "Should we continue?"
+            //     ok "Yes, we should."
+            //     submitter "alice,bob"
+            //     parameters {
+            //         string(name: 'PERSON', defaultValue: 'Mr Kiran', description: 'Who should I say hello to?')
+            //     }
+            // }
+            when{
+                expression { "$params.DEPLOY" == "true" }
+
+            }
             steps{
                 script{
-                       withAWS(region:'us-east-1',credentials:'aws-creds') {
-                        sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
-
-                            docker build -t ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-
-                            docker images
-
-                            docker push ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} 
-
-                        """
-                    }
+                    sh """
+                        echo "Deploying"
+                    """
                 }
             }
         }
     }
+
 // post build stage
     post{
         always{
@@ -79,5 +87,8 @@ pipeline{
         failure{
             echo "I will run if failure"
         }
+        // aborted{
+        //     echo "Pipeline is Aborted please Check It"
+        // }
     }
 }

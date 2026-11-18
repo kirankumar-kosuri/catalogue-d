@@ -9,6 +9,9 @@ pipeline{
     environment{
         COURSE = "Jenkins"
         appVersion = ""
+        ACCOUNT_ID = "921040036993"
+        PROJECT = "roboshop"
+        COMPONENT = "catalogue"
     }
 
     options {
@@ -29,12 +32,42 @@ pipeline{
                 }
             }
         }
+
         stage('Install Dependencies'){
             steps{
                 script{
                     sh """
                         npm install 
                     """
+                }
+            }
+        }
+        
+        stage('Unit Test'){
+            steps{
+                script{
+                    sh """
+                        npm test 
+                    """
+                }
+            }
+        }
+
+        stage('Build Dependencies'){
+            steps{
+                script{
+                    sh """
+                    withAWS(region:'us-east-1',credentials:'aws-creds') {
+
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+
+                    docker build -t ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
+
+                    docker images
+
+                    docker push ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} 
+                    """
+                    }
                 }
             }
         }

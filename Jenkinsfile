@@ -53,7 +53,7 @@ pipeline{
             }
         }
 
-        stage('Build Dependencies'){
+        stage('Build Image'){
             steps{
                 script{
                     sh """
@@ -89,3 +89,4 @@ pipeline{
         //     echo "Pipeline is Aborted please Check It"
         // }
     }
+

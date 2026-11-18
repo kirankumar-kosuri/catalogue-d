@@ -66,6 +66,16 @@ pipeline{
             }
         }
 
+        stage('Quality Gate') {
+            steps {
+                // Prevents the pipeline from hanging if the webhook fails
+                timeout(time: 1, unit: 'HOURS') {
+                    // Pauses until SonarQube sends the webhook payload
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Build Image'){
             steps{
                 script{

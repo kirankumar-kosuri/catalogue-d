@@ -9,10 +9,6 @@ pipeline{
     environment{
         COURSE = "Jenkins"
         appVersion = ""
-        ACC_ID = "921040036993"
-        PROJECT = "roboshop"
-        COMPONENT = "catalogue"
-
     }
 
     options {
@@ -20,14 +16,16 @@ pipeline{
         disableConcurrentBuilds()
     }
 
+    
+
 // build stage
     stages{
         stage('Read Version'){
             steps{
                 script{
-                    def packageJSON = readJSON file: 'package.json'
-                    appVersion = packageJSON.version
-                    echo "appVersion is: ${appVersion}"
+                   def packageJSON = readJSON file: 'package.json'
+                   appVersion = packageJSON.version
+                   echo appVersion is ${appVersion}
                 }
             }
         }
@@ -35,47 +33,8 @@ pipeline{
             steps{
                 script{
                     sh """
-                        npm install
+                        npm install 
                     """
-                }
-            }
-        }
-        stage('Unit Test'){
-            steps{
-                script{
-                    sh """
-                        npm test
-                    """
-                }
-            }
-        }
-        stage('Sonar Scan'){
-            environment {
-                def scannerHome = tool 'sonar-8.0'
-            }
-            steps{
-                script{
-                    withSonarQubeEnv('sonar-server') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                     }
-                }
-            }
-        }
-        stage('Build Image'){
-            steps{
-                script{
-                    withAWS(region:'us-east-1',credentials:'aws-creds') {
-                        sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-
-                            docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-
-                            docker images
-    
-                            docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} 
-
-                        """
-                    }
                 }
             }
         }

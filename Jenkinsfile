@@ -114,8 +114,8 @@ pipeline{
                 }
             }
         }
-
-// post build stage
+     }
+    // post build stage
 
     post{
         always{
@@ -133,8 +133,9 @@ pipeline{
         //     echo "Pipeline is Aborted please Check It"
         // }
     }
-  }
+ 
 }
+
 
 
 

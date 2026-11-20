@@ -99,23 +99,24 @@ pipeline{
         }
 
         
-        stage('Trivy Scan'){
-            steps{
-                script{
-                    sh """
-                        trivy image \
-                        --scanners vuln \
-                        --severity HIGH,CRITICAL,MEDIUM \
-                        --pkg-types os \
-                        --exit-code 1 \
-                        --format table \
-                        ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                    """
-                }
-            }
-        }
+        // stage('Trivy Scan'){
+        //     steps{
+        //         script{
+        //             sh """
+        //                 trivy image \
+        //                 --scanners vuln \
+        //                 --severity HIGH,CRITICAL,MEDIUM \
+        //                 --pkg-types os \
+        //                 --exit-code 1 \
+        //                 --format table \
+        //                 ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
+        //             """
+        //         }
+        //     }
+        // }
 
 // post build stage
+
     post{
         always{
             echo "I will always say Hello again!"

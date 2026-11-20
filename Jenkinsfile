@@ -97,6 +97,22 @@ pipeline{
                 }
             }
         }
+
+        stage('Trivy Scan'){
+            steps{
+                script{
+                    sh """
+                        trivy image \ 
+                        --scanners vuln \
+                        --severity HIGH,CRITICAL,MEDIUM \
+                        --pkg-types os \
+                        --exit-code 1 \
+                        --format table \
+                        ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/roboshop/catalogue:1.1.0
+                    """
+                }
+            }
+        }
     }
 
 // post build stage

@@ -66,6 +66,7 @@ pipeline{
             }
         }
 
+
         stage('Quality Gate') {
             steps {
                 // Prevents the pipeline from hanging if the webhook fails
